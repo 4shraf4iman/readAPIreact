@@ -21,6 +21,7 @@ import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn';
 import axios from 'axios'
 import Alert from '@material-ui/lab/Alert';
+import { Typography } from '@material-ui/core';
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -47,21 +48,30 @@ const api = axios.create({
 })
 
 
-function validateEmail(email){
-  const re = /^((?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\]))$/;
-  return re.test(String(email).toLowerCase());
-}
 
 function App() {
 
   var columns = [
-    {title: "Id", field: "id"},
-    {title: "Name", field: "name"},
-	{title: "Email", field: "email"},
-    {title: "Status", field: "status"},
-    {title: "Gender", field: "gender"}
-
-  
+    {
+      field: 'id',
+      title: 'ID',
+      render: rowData => <Typography style={{ width:'10%'}}>{rowData.id}</Typography>,
+    },
+    {
+      field: 'user_id',
+      title: 'User Id',
+      render: rowData => <Typography style={{ width:'100px'}}>{rowData.user_id}</Typography>,
+    },
+    {
+      field: 'title',
+      title: 'Title',
+      render: rowData => <Typography style={{ width:'200px'}}>{rowData.title}</Typography>,
+    },
+      {
+        field: 'body',
+        title: 'Body',
+        render: rowData => <Typography style={{ width:'800px'}}>{rowData.body}</Typography>,
+      },
   ]
   const [data, setData] = useState([]); //table data
 
@@ -70,7 +80,7 @@ function App() {
   const [errorMessages, setErrorMessages] = useState([])
 
   useEffect(() => { 
-    api.get("/users")
+    api.get("/posts")
         .then(res => {               
             setData(res.data.data)
          })
@@ -82,19 +92,13 @@ function App() {
   const handleRowUpdate = (newData, oldData, resolve) => {
     //validation
     let errorList = []
-    if(newData.name === ""){
-      errorList.push("Please enter Name")
+    if(newData.title === ""){
+      errorList.push("Please enter Title")
     }
-	if(newData.email === "" || validateEmail(newData.email) === false){
-      errorList.push("Please enter a valid Email")
+    if(newData.body === ""){
+      errorList.push("Please enter Body")
     }
-    if(newData.status === ""){
-      errorList.push("Please enter Status")
-    }
-     if(newData.gender === ""){
-      errorList.push("Please enter Gender")
-    }
-
+  
     if(errorList.length < 1){
       api.patch("/users/"+newData.id, newData)
       .then(res => {
@@ -124,21 +128,16 @@ function App() {
   const handleRowAdd = (newData, resolve) => {
     //validation
     let errorList = []
-    if(newData.name === undefined){
-      errorList.push("Please enter Name")
+    
+    if(newData.title === undefined){
+      errorList.push("Please enter the Title")
     }
-	if(newData.email === undefined || validateEmail(newData.email) === false){
-      errorList.push("Please enter a valid Email")
-    }
-    if(newData.status === undefined){
-      errorList.push("Please enter the Status")
-    }
-    if(newData.gender === undefined){
-      errorList.push("Please enter the Gender")
+    if(newData.body === undefined){
+      errorList.push("Please enter the Body")
     }
 
     if(errorList.length < 1){ //no error
-      api.post("/users", newData)
+      api.post("/posts", newData)
       .then(res => {
         let dataToAdd = [...data];
         dataToAdd.push(newData);
@@ -163,7 +162,7 @@ function App() {
 
   const handleRowDelete = (oldData, resolve) => {
     
-    api.delete("/users/"+oldData.id)
+    api.delete("/posts/"+oldData.id)
       .then(res => {
         const dataDelete = [...data];
         const index = oldData.tableData.id;
@@ -182,9 +181,9 @@ function App() {
   return (
     <div className="App">
       
-      <Grid container spacing={2}>
-          <Grid item xs={6}></Grid>
-          <Grid item xs={8}>
+      <Grid container spacing={3}>
+          
+          <Grid>
           <div>
             {iserror && 
               <Alert severity="error">
@@ -194,8 +193,8 @@ function App() {
               </Alert>
             }       
           </div>
-            <MaterialTable
-              title="Person Info ( We pull Person Data (API) from https://gorest.co.in/public-api/ ) "
+            <MaterialTable style={{width:'100%'}}
+              title="Posts Info ( We pull Posts Data (API) from https://gorest.co.in/public-api/ ) : "
               columns={columns}
               data={data}
               icons={tableIcons}
@@ -217,7 +216,6 @@ function App() {
             />
           
           </Grid>
-          <Grid item xs={3}></Grid>
         </Grid>
     </div>
   );
